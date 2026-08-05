@@ -1,7 +1,20 @@
+const DEFAULT_URL = "https://www.iaradiance.com";
+
+function normalizeSiteUrl(value: string | undefined): string {
+  if (!value) return DEFAULT_URL;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return DEFAULT_URL;
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return DEFAULT_URL;
+  }
+}
+
 export const SITE = {
   name: "Smart Radiance",
   legalName: "Smart Radiance",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.iaradiance.com",
+  url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   email: "iasmartechnology@gmail.com",
   phoneDisplay: "627 297 958",
   phoneHref: "tel:627297958",
