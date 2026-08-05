@@ -1,7 +1,7 @@
 export const SITE = {
   name: "Smart Radiance",
   legalName: "Smart Radiance",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://smartradiance.es",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.iaradiance.com",
   email: "iasmartechnology@gmail.com",
   phoneDisplay: "627 297 958",
   phoneHref: "tel:627297958",
