@@ -1,44 +1,35 @@
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { Benefits } from "@/components/sections/Benefits";
+import { CTA } from "@/components/sections/CTA";
+import { FAQ } from "@/components/sections/FAQ";
 import { Hero } from "@/components/sections/Hero";
+import { Process } from "@/components/sections/Process";
 import { Services } from "@/components/sections/Services";
-import { Methodology } from "@/components/sections/Methodology";
-import { CTASection } from "@/components/sections/CTASection";
-import { SITE } from "@/constants/site";
+import { organizationSchema } from "@/lib/schema";
 
-const breadcrumbJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Inicio",
-      item: SITE.url,
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Servicios",
-      item: `${SITE.url}#servicios`,
-    },
-    {
-      "@type": "ListItem",
-      position: 3,
-      name: "Metodología",
-      item: `${SITE.url}#metodologia`,
-    },
-  ],
-};
-
-export default function Home() {
+export default function HomePage() {
   return (
     <>
-      <Hero />
-      <Services />
-      <Methodology />
-      <CTASection />
+      <Navbar />
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-ink focus:px-4 focus:py-3 focus:text-sm focus:text-white"
+      >
+        Saltar al contenido
+      </a>
+      <main id="main">
+        <Hero />
+        <Services />
+        <Process />
+        <Benefits />
+        <FAQ />
+        <CTA />
+      </main>
+      <Footer />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
       />
     </>
   );

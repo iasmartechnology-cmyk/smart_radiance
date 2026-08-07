@@ -1,49 +1,77 @@
-"use client";
-
-import { motion } from "framer-motion";
-import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary";
+type Size = "md" | "lg";
 
-interface ButtonProps {
-  variant?: Variant;
-  href?: string;
-  className?: string;
+type CommonProps = {
   children: ReactNode;
+  variant?: Variant;
+  size?: Size;
+  className?: string;
+};
+
+type ButtonAsButton = CommonProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: undefined;
+  };
+
+type ButtonAsLink = CommonProps & {
+  href: string;
+  target?: string;
+  rel?: string;
   onClick?: () => void;
-}
+};
 
-const baseStyles =
-  "inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 font-display text-label-md transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+type ButtonProps = ButtonAsButton | ButtonAsLink;
 
-const variantStyles: Record<Variant, string> = {
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-[12px] font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:pointer-events-none disabled:opacity-50";
+
+const variants: Record<Variant, string> = {
   primary:
-    "bg-primary text-on-primary shadow-gold hover:bg-primary-container hover:text-on-primary-container",
+    "bg-gold-deep text-white shadow-[var(--shadow-gold)] hover:-translate-y-0.5 hover:bg-[#7d5e27] hover:shadow-[0_18px_44px_rgba(184,145,74,0.35)] active:translate-y-0",
   secondary:
-    "border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container",
+    "border border-ink/12 bg-white/50 text-ink backdrop-blur-sm hover:-translate-y-0.5 hover:border-gold/40 hover:bg-white hover:text-gold-deep active:translate-y-0",
 };
 
-const motionProps = {
-  whileHover: { y: -2 },
-  whileTap: { scale: 0.98 },
-  transition: { type: "spring" as const, stiffness: 400, damping: 25 },
+const sizes: Record<Size, string> = {
+  md: "px-5 py-3 text-sm sm:text-[15px]",
+  lg: "px-6 py-3.5 text-[15px] sm:px-7 sm:py-4 sm:text-base",
 };
 
-export function Button({ variant = "primary", href, className, children, onClick }: ButtonProps) {
-  const classes = cn(baseStyles, variantStyles[variant], className);
+export function Button(props: ButtonProps) {
+  const {
+    children,
+    variant = "primary",
+    size = "md",
+    className,
+    ...rest
+  } = props;
 
-  if (href) {
+  const classes = cn(base, variants[variant], sizes[size], className);
+
+  if ("href" in props && props.href) {
+    const { href, target, rel, onClick } = props;
     return (
-      <motion.a href={href} className={classes} onClick={onClick} {...motionProps}>
+      <Link
+        href={href}
+        target={target}
+        rel={rel}
+        onClick={onClick}
+        className={classes}
+      >
         {children}
-      </motion.a>
+      </Link>
     );
   }
 
+  const buttonProps = rest as ButtonHTMLAttributes<HTMLButtonElement>;
+
   return (
-    <motion.button type="button" className={classes} onClick={onClick} {...motionProps}>
+    <button type="button" className={classes} {...buttonProps}>
       {children}
-    </motion.button>
+    </button>
   );
 }

@@ -1,26 +1,21 @@
 import type { MetadataRoute } from "next";
-import { SITE } from "@/constants/site";
+import { SITE } from "@/lib/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: SITE.name,
     short_name: SITE.name,
-    description: SITE.description,
+    description: SITE.ogDescription,
     start_url: "/",
     display: "standalone",
-    background_color: "#fcf9f8",
-    theme_color: SITE.themeColor,
+    background_color: "#f7f4ef",
+    theme_color: "#f7f4ef",
+    lang: "es",
     icons: [
       {
         src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
-        purpose: "any",
-      },
-      {
-        src: "/apple-icon.png",
-        sizes: "180x180",
-        type: "image/png",
       },
     ],
   };
