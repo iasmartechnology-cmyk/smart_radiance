@@ -1,22 +1,23 @@
 import type { MetadataRoute } from "next";
-import { SITE } from "@/lib/constants";
+import { site } from "@/lib/site";
 
+/**
+ * Web app manifest — carried over from the previous site and updated to the
+ * current palette and generated icons.
+ */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: SITE.name,
-    short_name: SITE.name,
-    description: SITE.ogDescription,
+    name: site.name,
+    short_name: site.shortName,
+    description: site.description,
     start_url: "/",
     display: "standalone",
-    background_color: "#f7f4ef",
-    theme_color: "#f7f4ef",
-    lang: "es",
+    background_color: "#171721",
+    theme_color: "#171721",
+    lang: site.lang,
     icons: [
-      {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-      },
+      { src: "/icon", sizes: "64x64", type: "image/png" },
+      { src: "/apple-icon", sizes: "180x180", type: "image/png" },
     ],
   };
 }

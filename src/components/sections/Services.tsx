@@ -1,48 +1,42 @@
-"use client";
+import Reveal from "@/components/animations/Reveal";
+import HeadingReveal from "@/components/animations/HeadingReveal";
+import { services } from "@/lib/content";
 
-import { motion } from "framer-motion";
-import { Section } from "@/components/ui/Section";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Reveal, Stagger, StaggerItem } from "@/components/ui/Reveal";
-import { SERVICES } from "@/lib/constants";
-
-export function Services() {
+export default function Services() {
   return (
-    <Section id="servicios">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Servicios"
-          title="Tres formas de elevar tu presencia online"
-          description="Nos centramos en lo esencial: construir, posicionar y mejorar. Sin dispersión."
-        />
-      </Reveal>
+    <section
+      id="servicios"
+      aria-label="Servicios"
+      className="relative z-10 py-[var(--section-gap)] md:py-28"
+    >
+      <div className="shell">
+        <div className="max-w-[46ch]">
+          <p className="text-caption text-cobalt">Equipo de ruta</p>
+          <HeadingReveal
+            as="h2"
+            onScroll
+            lines={["Todo lo que necesitas", "para subir."]}
+            className="text-heading-lg mt-5 text-ivory"
+          />
+        </div>
 
-      <Stagger className="mt-14 grid gap-5 md:grid-cols-3 md:gap-6">
-        {SERVICES.map((service) => (
-          <StaggerItem key={service.id}>
-            <motion.article
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="group relative h-full overflow-hidden rounded-[20px] border border-ink/8 bg-white/55 p-7 shadow-[var(--shadow-soft)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[var(--shadow-lift)] sm:p-8"
-            >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(184,145,74,0.18),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-              />
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold-deep">
-                {service.number}
-              </p>
-              <h3 className="mt-5 font-display text-2xl font-medium tracking-[-0.03em] text-ink sm:text-[1.65rem]">
-                {service.title}
-              </h3>
-              <p className="mt-4 text-[15px] leading-relaxed text-ink-muted sm:text-base">
-                {service.description}
-              </p>
-              <div className="mt-8 h-px w-12 bg-gold/50 transition-all duration-300 group-hover:w-20" />
-            </motion.article>
-          </StaggerItem>
-        ))}
-      </Stagger>
-    </Section>
+        {/* Graphite cards — separation by value step, never by shadow */}
+        <Reveal
+          as="ul"
+          stagger
+          className="mt-14 grid gap-5 sm:grid-cols-2"
+        >
+          {services.map((s) => (
+            <li key={s.id}>
+              <article className="card h-full transition-colors duration-500 hover:bg-obsidian">
+                <span className="text-caption text-slate">{s.index}</span>
+                <h3 className="text-heading-sm mt-4 text-ivory">{s.title}</h3>
+                <p className="text-body mt-3 text-ash">{s.body}</p>
+              </article>
+            </li>
+          ))}
+        </Reveal>
+      </div>
+    </section>
   );
 }
