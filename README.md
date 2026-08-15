@@ -8,7 +8,7 @@ Construida a partir de la referencia visual importada desde Google Stitch
 ámbar contenido) y reinterpretada como una experiencia scroll-driven con 3D.
 
 - **Dominio:** https://iaradiance.com
-- **Contacto:** iasmartechnology@gmail.com · 627 297 958
+- **Contacto:** smartradianc@gmail.com · 627 297 958
 
 ## Stack
 

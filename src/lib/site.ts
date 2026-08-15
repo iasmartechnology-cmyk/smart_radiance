@@ -14,7 +14,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://iaradiance.com",
   locale: "es_ES",
   lang: "es",
-  email: "iasmartechnology@gmail.com",
+  email: "smartradianc@gmail.com",
   phone: "+34627297958",
   phoneDisplay: "627 297 958",
   whatsapp: "https://wa.me/34627297958",
@@ -25,7 +25,7 @@ export const site = {
    */
   gmailCompose:
     "https://mail.google.com/mail/?view=cm&fs=1&tf=1" +
-    "&to=iasmartechnology@gmail.com" +
+    "&to=smartradianc@gmail.com" +
     "&su=" +
     encodeURIComponent("Consulta desde iaradiance.com") +
     "&body=" +
