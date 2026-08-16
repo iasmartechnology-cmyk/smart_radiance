@@ -21,7 +21,10 @@ const smoothstep = (a: number, b: number, x: number) => {
  * climbs to) while ridged fBm scatters a surrounding range out to the horizon.
  */
 export default function Terrain({ mobile }: Props) {
-  const segments = mobile ? 120 : 220;
+  // Triangle count is paid on every frame, so it stays as low as the faceted
+  // look allows: 220 segments quadrupled the geometry for detail that flat
+  // shading throws away anyway.
+  const segments = mobile ? 80 : 140;
 
   const geometry = useMemo(() => {
     const geo = new PlaneGeometry(

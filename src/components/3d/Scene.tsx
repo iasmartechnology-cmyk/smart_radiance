@@ -175,8 +175,9 @@ export default function Scene({ reduced, mobile }: Props) {
 
       <Sun reduced={reduced} />
       <Terrain mobile={mobile} />
-      <Stars count={mobile ? 320 : 900} reduced={reduced} />
-      {!reduced && <Snow count={mobile ? 150 : 420} />}
+      <Stars count={mobile ? 200 : 450} reduced={reduced} />
+      {/* Snow rewrites its buffer every frame, so the count is kept modest. */}
+      {!reduced && <Snow count={mobile ? 90 : 200} />}
 
       {/* Post-processing is mounted by SceneCanvas, which code-splits it so
           the effect library never reaches phones that would not run it. */}

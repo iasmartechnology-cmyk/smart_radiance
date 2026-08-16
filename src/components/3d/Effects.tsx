@@ -10,7 +10,9 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
  */
 export default function Effects() {
   return (
-    <EffectComposer>
+    // Half-resolution passes: bloom is a blur, so running it at full device
+    // resolution costs fill-rate for detail the blur immediately destroys.
+    <EffectComposer resolutionScale={0.5}>
       <Bloom
         intensity={1.15}
         luminanceThreshold={0.62}
