@@ -4,9 +4,10 @@ export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
 
 /**
- * Browser tab icon — a summit mark in the site's own palette.
- * Kept to two shapes so it still reads at 16px: an ivory peak with a cobalt
- * cap, echoing the ascent the whole site is built around.
+ * Browser tab icon — a glowing golden sphere on the site's onyx canvas.
+ * A radial gradient gives the sphere a lit, three-dimensional surface; a
+ * softer halo behind it reads as glow at both 64px and the 16px the browser
+ * tab actually renders.
  */
 export default function Icon() {
   return new ImageResponse(
@@ -21,12 +22,29 @@ export default function Icon() {
           background: "#171721",
         }}
       >
-        <svg width="64" height="64" viewBox="0 0 64 64">
-          {/* Peak */}
-          <path d="M8 50 L32 12 L56 50 Z" fill="#ededf3" />
-          {/* Snow cap */}
-          <path d="M32 12 L41 26 L32 21 L23 26 Z" fill="#5266eb" />
-        </svg>
+        <div
+          style={{
+            width: 54,
+            height: 54,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(255,206,110,0.55) 0%, rgba(255,206,110,0) 72%)",
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              display: "flex",
+              background:
+                "radial-gradient(circle at 34% 28%, #fff8e6 0%, #ffd873 20%, #f5ab2e 52%, #b9741a 84%, #8f5710 100%)",
+            }}
+          />
+        </div>
       </div>
     ),
     { ...size },
