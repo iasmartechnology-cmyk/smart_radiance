@@ -5,7 +5,10 @@ import MagneticButton from "@/components/ui/MagneticButton";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 
-const HEADLINE = ["Llevamos tu negocio", "a la cima."];
+// The H1 keeps the brand's ascent metaphor but leads with what the agency
+// actually does, so the page's most important heading carries real search
+// relevance instead of only atmosphere.
+const HEADLINE = ["Diseño web y SEO", "que llevan tu negocio", "a la cima."];
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -47,10 +50,10 @@ export default function Hero() {
       {/* Mercury hero: a single centred content stack, ~640px wide */}
       <div className="shell flex flex-col items-center pt-28 pb-24 text-center">
         <p data-eyebrow className="text-caption text-ash">
-          Agencia digital · Web &amp; SEO
+          Agencia de diseño web y posicionamiento SEO
         </p>
 
-        <h1 className="text-display mt-6 max-w-[16ch] text-ivory">
+        <h1 className="text-display mt-6 max-w-[22ch] text-ivory">
           {HEADLINE.map((line, i) => (
             <span key={i} data-line className="reveal-line">
               <span>{line}</span>
@@ -58,9 +61,9 @@ export default function Hero() {
           ))}
         </h1>
 
-        <p data-body className="text-body-lg mt-6 max-w-[46ch] text-ash">
-          Diseñamos, desarrollamos y posicionamos webs que hacen crecer
-          negocios. Cada scroll es un paso más hacia la cima.
+        <p data-body className="text-body-lg mt-6 max-w-[52ch] text-ash">
+          Diseñamos, desarrollamos y posicionamos páginas web para empresas que
+          quieren ganar visibilidad en Google y convertir visitas en clientes.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

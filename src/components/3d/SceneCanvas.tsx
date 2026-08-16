@@ -2,9 +2,17 @@
 
 import { Canvas } from "@react-three/fiber";
 import { AdaptiveDpr, PerformanceMonitor } from "@react-three/drei";
+import dynamic from "next/dynamic";
 import { Suspense, useState } from "react";
 import { ACESFilmicToneMapping } from "three";
 import Scene from "./Scene";
+
+/**
+ * The post-processing library is a sizeable dependency and only ever runs on
+ * desktop, so it gets its own chunk instead of riding along in the main 3D
+ * bundle that every phone downloads.
+ */
+const Effects = dynamic(() => import("./Effects"), { ssr: false });
 import { useIsMobile, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 
 /**
@@ -44,6 +52,7 @@ export default function SceneCanvas() {
         >
           <Scene reduced={reduced} mobile={mobile} />
         </PerformanceMonitor>
+        {!reduced && !mobile && <Effects />}
         <AdaptiveDpr pixelated={false} />
       </Suspense>
     </Canvas>

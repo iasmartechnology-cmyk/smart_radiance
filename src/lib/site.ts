@@ -6,12 +6,15 @@ export const site = {
   name: "Smart Radiance",
   shortName: "Smart Radiance",
   /**
-   * Canonical origin. Read from NEXT_PUBLIC_SITE_URL so the deployment decides
-   * (Vercel already sets it to the www host); falls back to the bare domain
-   * for local development.
+   * Canonical origin.
+   *
+   * Production serves 200 on the www host and 308-redirects the bare domain to
+   * it, so www IS the canonical form. The fallback must match that exactly:
+   * pointing canonical/sitemap/robots at a URL that redirects makes Google
+   * follow a hop on every canonical check and muddies the signal.
    */
-  domain: process.env.NEXT_PUBLIC_SITE_URL ?? "https://iaradiance.com",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://iaradiance.com",
+  domain: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.iaradiance.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.iaradiance.com",
   locale: "es_ES",
   lang: "es",
   email: "smartradianc@gmail.com",

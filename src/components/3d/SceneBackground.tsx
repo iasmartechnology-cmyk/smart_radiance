@@ -20,6 +20,22 @@ export default function SceneBackground() {
   // always mount within a hard timeout (idle callbacks are throttled in
   // background/non-composited tabs).
   useEffect(() => {
+    // Skip the scene altogether where it can't pay for itself: under
+    // reduced-motion it would download the whole Three.js bundle just to paint
+    // one frozen frame, and on Save-Data the user has asked us not to. The CSS
+    // wash below is the intended fallback in both cases.
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const saveData = Boolean(
+      (
+        navigator as Navigator & {
+          connection?: { saveData?: boolean };
+        }
+      ).connection?.saveData,
+    );
+    if (reduced || saveData) return;
+
     const w = window as typeof window & {
       requestIdleCallback?: (cb: () => void) => number;
       cancelIdleCallback?: (id: number) => void;

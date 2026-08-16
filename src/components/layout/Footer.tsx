@@ -1,26 +1,47 @@
+import Link from "next/link";
 import { site, navLinks } from "@/lib/site";
+import { services } from "@/lib/content";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="relative z-10 bg-onyx/80 backdrop-blur-sm">
       <div className="shell py-16">
-        <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
-          <div>
+        <div className="grid gap-12 md:grid-cols-[1fr_auto_auto] md:gap-16">
+          <div className="max-w-[34ch]">
             <p className="text-subheading text-ivory">{site.name}</p>
             <p className="text-body-sm mt-2 text-ash">{site.tagline}</p>
           </div>
 
+          {/* Site-wide links to every service page — the strongest internal
+              linking signal available on a small site. */}
+          <nav aria-label="Servicios">
+            <p className="text-caption text-slate">Servicios</p>
+            <ul className="mt-4 flex flex-col gap-3">
+              {services.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href={s.href}
+                    className="text-body-sm text-ash transition-colors hover:text-ivory"
+                  >
+                    {s.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
           <nav aria-label="Pie de página">
-            <ul className="flex flex-wrap gap-x-7 gap-y-3">
+            <p className="text-caption text-slate">Navegación</p>
+            <ul className="mt-4 flex flex-col gap-3">
               {navLinks.map((l) => (
                 <li key={l.href}>
-                  <a
-                    href={l.href}
+                  <Link
+                    href={`/${l.href}`}
                     className="text-body-sm text-ash transition-colors hover:text-ivory"
                   >
                     {l.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

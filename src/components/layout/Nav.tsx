@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { navLinks, site } from "@/lib/site";
 import { scrollToId } from "@/lib/smooth-scroll";
 import { gsap, useGSAP } from "@/lib/gsap";
@@ -12,6 +14,8 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const nav = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   // Entrance animation.
   useGSAP(
@@ -65,11 +69,18 @@ export default function Nav() {
     return () => observer.disconnect();
   }, []);
 
+  // Section anchors only exist on the homepage. From a service page the same
+  // links have to become real navigations to "/#seccion", otherwise they
+  // silently do nothing.
   const go = (href: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
     setOpen(false);
+    if (!isHome) return; // let the Link navigate
+    e.preventDefault();
     scrollToId(href);
   };
+
+  /** Anchor on the homepage, absolute path anywhere else. */
+  const hrefFor = (hash: string) => (isHome ? hash : `/${hash}`);
 
   return (
     <>
@@ -81,38 +92,40 @@ export default function Nav() {
         }`}
       >
         <div className="shell flex items-center justify-between py-4">
-          <a
-            href="#inicio"
+          <Link
+            href={hrefFor("#inicio")}
             onClick={go("#inicio")}
             className="text-body font-[480] text-ivory"
           >
             {site.name}
-          </a>
+          </Link>
 
           <ul className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a
-                  href={link.href}
+                <Link
+                  href={hrefFor(link.href)}
                   onClick={go(link.href)}
-                  aria-current={active === link.href ? "true" : undefined}
-                  data-on={active === link.href}
+                  aria-current={
+                    isHome && active === link.href ? "true" : undefined
+                  }
+                  data-on={isHome && active === link.href}
                   className="text-body rounded-[var(--radius-nav)] px-5 py-2 text-ash transition-colors hover:text-ivory data-[on=true]:bg-obsidian data-[on=true]:text-ivory"
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-3">
-            <a
-              href="#contacto"
+            <Link
+              href={hrefFor("#contacto")}
               onClick={go("#contacto")}
               className="text-body hidden rounded-[var(--radius-pill)] bg-cobalt px-5 py-2.5 text-white transition-colors hover:bg-[#4356d8] md:inline-flex"
             >
               Empezar proyecto
-            </a>
+            </Link>
 
             <button
               type="button"
@@ -135,22 +148,22 @@ export default function Nav() {
         className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-onyx/95 backdrop-blur-md md:hidden"
       >
         {navLinks.map((link) => (
-          <a
+          <Link
             key={link.href}
-            href={link.href}
+            href={hrefFor(link.href)}
             onClick={go(link.href)}
             className="text-heading text-ivory"
           >
             {link.label}
-          </a>
+          </Link>
         ))}
-        <a
-          href="#contacto"
+        <Link
+          href={hrefFor("#contacto")}
           onClick={go("#contacto")}
           className="text-body mt-2 rounded-[var(--radius-pill)] bg-cobalt px-6 py-3 text-white"
         >
           Empezar proyecto
-        </a>
+        </Link>
       </div>
     </>
   );

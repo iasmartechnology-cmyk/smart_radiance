@@ -12,7 +12,6 @@ import Terrain from "./Terrain";
 import Sun from "./Sun";
 import Stars from "./Stars";
 import Snow from "./Snow";
-import Effects from "./Effects";
 import { scrollState } from "@/lib/scroll-store";
 import { maxHeightAround } from "@/lib/terrain";
 import { damp } from "@/lib/utils";
@@ -179,8 +178,8 @@ export default function Scene({ reduced, mobile }: Props) {
       <Stars count={mobile ? 320 : 900} reduced={reduced} />
       {!reduced && <Snow count={mobile ? 150 : 420} />}
 
-      {/* Post-processing is desktop-only to protect low-power devices. */}
-      {!reduced && !mobile && <Effects />}
+      {/* Post-processing is mounted by SceneCanvas, which code-splits it so
+          the effect library never reaches phones that would not run it. */}
     </>
   );
 }

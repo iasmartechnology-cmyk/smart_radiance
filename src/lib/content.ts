@@ -5,32 +5,10 @@
  * to climb and to scale a business.
  */
 
-export const services = [
-  {
-    id: "diseno-desarrollo",
-    index: "01",
-    title: "Diseño y desarrollo web",
-    body: "Sitios a medida, rápidos y responsive. Del concepto al lanzamiento con código limpio y una experiencia cuidada en cada detalle.",
-  },
-  {
-    id: "optimizacion",
-    index: "02",
-    title: "Optimización y mejoras",
-    body: "Auditamos y afinamos tu web actual: velocidad, Core Web Vitals, accesibilidad y conversión. Más rendimiento, menos fricción.",
-  },
-  {
-    id: "seo",
-    index: "03",
-    title: "Posicionamiento SEO",
-    body: "Estrategia SEO técnica y de contenidos para escalar posiciones en Google y atraer tráfico que realmente importa a tu negocio.",
-  },
-  {
-    id: "indexacion",
-    index: "04",
-    title: "Indexación y presencia",
-    body: "Nos aseguramos de que los buscadores te encuentren e indexen: datos estructurados, sitemaps y una visibilidad medible.",
-  },
-] as const;
+// Services live in services.ts, which also drives the four service pages,
+// the sitemap and the structured data. Re-exported here so the homepage
+// sections keep a single import for their copy.
+export { services } from "./services";
 
 export const processSteps = [
   {

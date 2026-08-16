@@ -29,7 +29,8 @@ export default function Manifesto() {
             puntual, sino por una subida sostenida.
           </p>
           <p className="text-body mt-6 text-ash">
-            Nos ocupamos del terreno técnico para que tú te ocupes del negocio.
+            Nos ocupamos del terreno técnico —velocidad, indexación y
+            visibilidad en Google— para que tú te ocupes del negocio.
           </p>
         </Reveal>
       </div>

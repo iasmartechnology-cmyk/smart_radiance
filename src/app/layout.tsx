@@ -34,17 +34,18 @@ export const metadata: Metadata = {
   keywords: [
     "diseño web",
     "desarrollo web",
-    "agencia web",
+    "agencia de diseño web",
+    "páginas web para empresas",
     "posicionamiento SEO",
+    "agencia SEO",
     "optimización web",
-    "Core Web Vitals",
-    "presencia digital",
-    "Next.js",
+    "indexación en Google",
   ],
   authors: [{ name: site.name }],
   creator: site.name,
   publisher: site.name,
-  alternates: { canonical: "/" },
+  // Canonical is declared per page — inheriting "/" here would wrongly stamp
+  // every route (including 404s) as a duplicate of the homepage.
   openGraph: {
     type: "website",
     locale: site.locale,
