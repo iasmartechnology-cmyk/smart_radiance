@@ -44,7 +44,7 @@ export default function JsonLd() {
         },
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: "Servicios de diseño web y posicionamiento SEO",
+          name: "Servicios de diseño web, posicionamiento SEO y automatización",
           itemListElement: servicePages.map((s) => ({
             "@type": "Offer",
             itemOffered: {

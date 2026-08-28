@@ -10,6 +10,7 @@
  *   /optimizacion-web  → commercial: improving a site that already exists
  *   /seo               → commercial: ranking and organic visibility
  *   /indexacion-google → problem-aware: "my site doesn't show up on Google"
+ *   /automatizacion-ia → commercial: removing repetitive manual work
  */
 
 export type Faq = { q: string; a: string };
@@ -296,6 +297,72 @@ export const servicePages: ServicePage[] = [
       {
         q: "¿Sirve de algo pedir la indexación manualmente?",
         a: "Ayuda a que Google revise antes esa URL, pero no garantiza que la indexe. Si hay un problema técnico de fondo o el contenido no aporta valor, seguirá sin indexarse por mucho que lo solicites.",
+      },
+    ],
+  },
+  {
+    slug: "automatizacion-ia",
+    index: "05",
+    title: "Automatización con IA",
+    body: "Conectamos tu web, tu CRM y tus herramientas para que las tareas repetitivas dejen de hacerse a mano: leads, seguimientos, reservas y respuestas.",
+    metaTitle: "Automatización de procesos con IA",
+    metaDescription:
+      "Automatizamos procesos comerciales y operativos con IA: captación y cualificación de leads, CRM, email, WhatsApp, reservas y seguimientos. Menos trabajo manual.",
+    h1: "Automatización de procesos con IA",
+    intro:
+      "Cada hora que tu equipo dedica a copiar datos, responder lo mismo de siempre o perseguir seguimientos es una hora que no dedica a vender. Automatizamos esas tareas y conectamos las herramientas que ya usas.",
+    sections: [
+      {
+        h2: "Qué se puede automatizar",
+        paragraphs: [
+          "Lo más habitual está en el recorrido comercial completo: captación de leads desde formularios, clasificación según su interés, alta automática en el CRM, secuencias de email, avisos por WhatsApp, gestión de reservas, recordatorios de seguimiento, generación de presupuestos y recuperación de oportunidades que se quedaron sin respuesta.",
+          "También en lo operativo: pasar información de una herramienta a otra, generar informes recurrentes o procesar documentos que hoy se revisan a mano.",
+        ],
+      },
+      {
+        h2: "Agentes y asistentes de IA",
+        paragraphs: [
+          "Cuando la tarea implica entender lenguaje —responder dudas frecuentes, cualificar a un lead con unas preguntas, resumir una conversación o extraer datos de un documento— un asistente de IA hace el primer filtro y deja a tu equipo solo aquello que necesita criterio humano.",
+        ],
+      },
+      {
+        h2: "Automatizamos solo lo que compensa",
+        paragraphs: [
+          "No automatizamos por moda. Antes de proponer nada mapeamos tu proceso actual y buscamos dónde hay repetición real y un beneficio claro: cuántas horas se van, con qué frecuencia ocurre y qué coste tiene el error.",
+          "Si una tarea se hace dos veces al mes y se resuelve en cinco minutos, te diremos que no merece la pena automatizarla.",
+        ],
+      },
+    ],
+    deliverables: [
+      {
+        title: "Mapa del proceso",
+        body: "Dónde se pierde tiempo hoy y qué pasos justifican automatizarse, priorizados.",
+      },
+      {
+        title: "Integraciones",
+        body: "Web, formularios, CRM, email, WhatsApp y el resto de herramientas, conectados.",
+      },
+      {
+        title: "Asistentes de IA",
+        body: "Dudas frecuentes, cualificación de leads y procesamiento de documentos.",
+      },
+      {
+        title: "Seguimiento",
+        body: "Avisos cuando algo falla y medición de las horas que realmente se ahorran.",
+      },
+    ],
+    faqs: [
+      {
+        q: "¿Necesito cambiar las herramientas que ya uso?",
+        a: "Casi nunca. Lo normal es conectar lo que ya tienes. Solo proponemos cambiar una herramienta cuando la actual impide automatizar o cuesta más mantenerla que sustituirla.",
+      },
+      {
+        q: "¿Esto sustituye a mi equipo?",
+        a: "No. Lo que se automatiza es la parte repetitiva: copiar datos, avisar, clasificar y recordar. Las decisiones y la relación con el cliente siguen siendo de tu equipo, que gana tiempo para dedicarse a ellas.",
+      },
+      {
+        q: "¿Por dónde se empieza?",
+        a: "Por una sola automatización con impacto claro, normalmente en la captación o el seguimiento de leads. Cuando funciona y se nota, se amplía al resto del proceso.",
       },
     ],
   },

@@ -14,7 +14,7 @@ import { site } from "@/lib/site";
  */
 const title = "Diseño web y posicionamiento SEO | Smart Radiance";
 const description =
-  "Agencia de diseño web y posicionamiento SEO. Creamos páginas web para empresas, optimizamos su rendimiento y mejoramos tu visibilidad en Google.";
+  "Agencia de diseño web y posicionamiento SEO. Creamos páginas web para empresas, mejoramos tu visibilidad en Google y automatizamos procesos con IA.";
 
 export const metadata: Metadata = {
   // `absolute` bypasses the layout's "%s · Smart Radiance" template, which

@@ -16,7 +16,7 @@ export default function Services() {
           <HeadingReveal
             as="h2"
             onScroll
-            lines={["Diseño web, optimización", "y posicionamiento SEO."]}
+            lines={["Diseño web, SEO", "y automatización con IA."]}
             className="text-heading-lg mt-5 text-ivory"
           />
         </div>
@@ -24,7 +24,13 @@ export default function Services() {
         {/* Graphite cards — separation by value step, never by shadow.
             Each card links to its own page, which is what lets the four
             search intents rank separately instead of competing on one URL. */}
-        <Reveal as="ul" stagger className="mt-14 grid gap-5 sm:grid-cols-2">
+        {/* Three columns on wide screens so the five cards land 3 + 2 instead
+            of leaving a single orphan in a two-column grid. */}
+        <Reveal
+          as="ul"
+          stagger
+          className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {services.map((s) => (
             <li key={s.id}>
               <Link
