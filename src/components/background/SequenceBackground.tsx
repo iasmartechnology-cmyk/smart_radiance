@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { scrollState } from "@/lib/scroll-store";
 import { damp } from "@/lib/utils";
+import { SEQUENCE_FILES } from "./sequence-files";
 
 /**
  * Scroll-driven backdrop: a processor that comes apart layer by layer —
@@ -12,24 +13,29 @@ import { damp } from "@/lib/utils";
  * reassembles at the end of the page.
  *
  * It is rendered offline (scripts/render-cpu: a Three.js scene captured
- * frame by frame in headless Chrome) and scrubbed here as still frames on a
- * 2D canvas as the page scrolls — the technique Apple uses on its product
- * pages. Unlike the old WebGL scene it
- * needs no GPU, ships no 3D library and costs next to nothing per frame: a
- * redraw only happens when the frame index actually changes.
+ * frame by frame in headless Chrome) and shipped as a short MP4 whose
+ * playhead follows the scroll position — the technique Apple uses on its
+ * product pages.
+ *
+ * Why a video and not a stack of still images: a real browser only keeps a
+ * limited amount of decoded image data around. Hundreds of 720p frames (over
+ * 1 GB decoded) get evicted and re-decoded on the main thread right as they
+ * are drawn, which is what made slow scrolling stutter. A video is decoded by
+ * the GPU's media engine, off the main thread, and holds a few frames at a
+ * time. It is encoded with a keyframe every 3 frames, so any seek decodes at
+ * most 3 frames.
+ *
+ * Frames are copied onto a canvas rather than showing the <video> itself:
+ * canvas paints are not LCP candidates, so the backdrop can never displace
+ * the hero text as the page's LCP element.
  *
  * On the homepage the backdrop opens as a reveal: it starts inside a rounded
  * window behind the hero headline, and as the hero scrolls away the window
  * grows to full screen while the camera pushes in. Other pages get the full
  * backdrop straight away.
  *
- * Layers, bottom to top: onyx wash → window (clip) → zoom → poster + canvas →
- * scrim.
+ * Layers, bottom to top: onyx wash → window (clip) → zoom → canvas → scrim.
  */
-const SEQUENCE = {
-  desktop: { path: "/sequence/desktop/", count: 300 },
-  mobile: { path: "/sequence/mobile/", count: 200 },
-} as const;
 
 /** Window the reveal opens from — must match `.bg-window` in globals.css. */
 const WINDOW = {
@@ -38,41 +44,15 @@ const WINDOW = {
   open: "inset(0% 0% 0% 0% round 0px)",
 } as const;
 
-/** Parallel downloads — enough to fill the pipe without starving the page. */
-const CONCURRENCY = 6;
 /**
- * Backing-store ceiling. Frames are 1280 px wide, so a bigger canvas buys no
- * detail — it only multiplies the pixels blended and composited on every
- * scroll frame (a 1.5× DPR on a wide screen is ~3000 px across). The browser
- * upscales the canvas to the screen on the GPU for free.
+ * Backing-store ceiling. The video is 1280 px wide, so a bigger canvas buys
+ * no detail — it only multiplies the pixels copied and composited on every
+ * scroll frame. The browser upscales the canvas to the screen on the GPU.
  */
 const MAX_CANVAS_WIDTH = 1600;
 
-/** Single still used where the full sequence isn't worth loading. */
-const POSTER = "/sequence/poster.webp";
-
-const frameUrl = (path: string, i: number) =>
-  `${path}${String(i).padStart(3, "0")}.webp`;
-
-/**
- * Coarse-to-fine load order: every 8th frame first, then every 4th, 2nd and
- * finally the rest. Scrubbing works across the whole page after the first
- * handful of requests and simply gets smoother as the gaps fill in.
- */
-function loadOrder(count: number): number[] {
-  const seen = new Set<number>();
-  const order: number[] = [];
-  for (const step of [8, 4, 2, 1]) {
-    for (let i = 0; i < count; i += step) {
-      if (!seen.has(i)) {
-        seen.add(i);
-        order.push(i);
-      }
-    }
-  }
-  if (!seen.has(count - 1)) order.push(count - 1);
-  return order;
-}
+/** Seek only when the target moves by at least half a video frame (30 fps). */
+const MIN_SEEK = 0.5 / 30;
 
 export default function SequenceBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -121,9 +101,9 @@ export default function SequenceBackground() {
     const ctx = canvas?.getContext("2d", { alpha: false });
     if (!canvas || !ctx) return;
 
-    // Where the sequence can't pay for itself only the poster is shown, as a
+    // Where the video can't pay for itself only the poster is shown, as a
     // still: reduced motion (a scrubbing backdrop is exactly the motion they
-    // opted out of) and Save-Data / 2G (a few MB of frames is not a fair
+    // opted out of) and Save-Data / 2G (a few MB of video is not a fair
     // trade).
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -136,69 +116,37 @@ export default function SequenceBackground() {
     const slowNet = /(^|-)2g$/.test(conn?.effectiveType ?? "");
     const still = reduced || Boolean(conn?.saveData) || slowNet;
 
-    // The set is picked once per visit: swapping sets on resize would throw
-    // away every frame already downloaded.
-    const { path, count } = still
-      ? { path: "", count: 1 }
-      : window.matchMedia("(max-width: 767px)").matches
-        ? SEQUENCE.mobile
-        : SEQUENCE.desktop;
-    const urlFor = (i: number) => (still ? POSTER : frameUrl(path, i));
+    // The cut is picked once per visit: swapping on resize would throw away
+    // a video that has already downloaded.
+    const src = window.matchMedia("(max-width: 767px)").matches
+      ? SEQUENCE_FILES.mobile
+      : SEQUENCE_FILES.desktop;
 
-    const frames: (HTMLImageElement | null)[] = new Array(count).fill(null);
-    // Fractional frame position the scroll asks for (e.g. 40.3), and the
-    // position currently painted. Painting the fraction — rather than
-    // rounding to a whole frame — is what keeps slow scrolling fluid: with
-    // ~100 frames over the whole page a whole-frame step lands only every
-    // ~50 px, which reads as a stuttering slideshow.
-    let pos = 0;
-    let painted = -1;
+    let source: HTMLVideoElement | HTMLImageElement | null = null;
+    let video: HTMLVideoElement | null = null;
+    let objectUrl = "";
     let smooth = scrollState.progress;
+    let shownTime = -1; // playhead position currently on the canvas
+    let seeking = false;
     let px = 0;
     let py = 0;
     let disposed = false;
 
-    /** Nearest frame to `i` that has finished loading. */
-    const nearestLoaded = (i: number) => {
-      for (let d = 0; d < count; d++) {
-        if (frames[i - d]) return i - d;
-        if (frames[i + d]) return i + d;
-      }
-      return -1;
-    };
-
-    /** object-fit: cover blit at the given opacity. */
-    const blit = (img: HTMLImageElement, alpha: number) => {
+    /** object-fit: cover copy of the current source onto the canvas. */
+    const draw = () => {
+      if (!source) return;
+      const sw =
+        source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth;
+      const sh =
+        source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
+      if (!sw || !sh) return;
       const cw = canvas.width;
       const ch = canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-      const w = img.naturalWidth * scale;
-      const h = img.naturalHeight * scale;
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
-    };
-
-    /**
-     * Paint the scroll position as a blend of the two frames either side of
-     * it: frame `a` opaque, frame `a + 1` on top at the fractional weight.
-     * Until both neighbours have loaded, the nearest loaded frame is shown.
-     */
-    const draw = () => {
-      const a = Math.floor(pos);
-      const t = pos - a;
-      const lo = frames[a];
-      const hi = frames[Math.min(a + 1, count - 1)];
-      if (lo && hi) {
-        blit(lo, 1);
-        if (t > 0.01 && hi !== lo) blit(hi, t);
-      } else {
-        const i = nearestLoaded(Math.round(pos));
-        if (i < 0) return;
-        blit(frames[i]!, 1);
-      }
-      ctx.globalAlpha = 1;
-      if (painted < 0) canvas.style.opacity = "1";
-      painted = pos;
+      const scale = Math.max(cw / sw, ch / sh);
+      const w = sw * scale;
+      const h = sh * scale;
+      ctx.drawImage(source, (cw - w) / 2, (ch - h) / 2, w, h);
+      canvas.style.opacity = "1";
     };
 
     const resize = () => {
@@ -213,14 +161,32 @@ export default function SequenceBackground() {
     resize();
     window.addEventListener("resize", resize);
 
+    // One seek in flight at a time: each `seeked` paints the decoded frame
+    // and the next tick asks for wherever the scroll has got to since.
+    // Queuing seeks instead would make the video fall behind the scroll.
+    const onSeeked = () => {
+      seeking = false;
+      if (!video) return;
+      shownTime = video.currentTime;
+      draw();
+    };
+
     // One ticker for the whole backdrop (GSAP's, already running for Lenis).
-    // Scroll progress is eased like the old camera rig so flicks glide.
+    // Scroll progress is eased so flicks and trackpad jitter glide.
     const tick = (_time: number, deltaMs: number) => {
       const dt = Math.min(deltaMs / 1000, 0.05);
       smooth = damp(smooth, scrollState.progress, 6, dt);
-      pos = Math.min(1, Math.max(0, smooth)) * (count - 1);
-      // Repaint only while the position is actually moving.
-      if (Math.abs(pos - painted) > 0.004) draw();
+
+      if (video && !seeking && video.duration) {
+        // Stop a hair short of the end: seeking to `duration` exactly can
+        // land past the last frame and show nothing in some browsers.
+        const end = video.duration - 1 / 30;
+        const target = Math.min(1, Math.max(0, smooth)) * end;
+        if (Math.abs(target - shownTime) >= MIN_SEEK) {
+          seeking = true;
+          video.currentTime = target;
+        }
+      }
 
       // Subtle pointer parallax on desktop; the canvas is scaled up slightly
       // in CSS so the edges never show.
@@ -235,45 +201,60 @@ export default function SequenceBackground() {
       }
     };
 
-    // Downloads start well after first paint (see the kick-off below), so
-    // frames never compete with the HTML, fonts and scripts of the hero.
-    // Everything — the poster included — is drawn on the canvas rather than
-    // set as a CSS background: canvas paints are not LCP candidates, so the
-    // backdrop can never displace the hero text as the page's LCP element
-    // (a background image inside the animated window was being re-reported
-    // as LCP seconds later on phones).
-    const queue = loadOrder(count);
-    const pump = () => {
-      const i = queue.shift();
-      if (i === undefined || disposed) return;
+    const loadStill = () => {
       const img = new Image();
       img.decoding = "async";
-      img.src = urlFor(i);
-      // decode() keeps the JPEG/WebP decode off the main thread, so drawing
-      // it later is a plain blit.
+      img.src = SEQUENCE_FILES.poster;
       img
         .decode()
         .then(() => {
           if (disposed) return;
-          frames[i] = img;
-          // Repaint if this frame is one the current position needs.
-          if (painted < 0 || Math.abs(i - pos) < 2) draw();
+          source = img;
+          draw();
         })
-        .catch(() => {})
-        .finally(pump);
+        .catch(() => {});
     };
+
+    // The whole file is fetched up front and played from memory, so a seek
+    // never waits on a network range request mid-scroll.
+    const loadVideo = async () => {
+      try {
+        const res = await fetch(src);
+        if (!res.ok) throw new Error(String(res.status));
+        const blob = await res.blob();
+        if (disposed) return;
+        objectUrl = URL.createObjectURL(blob);
+        const v = document.createElement("video");
+        v.muted = true;
+        v.playsInline = true;
+        v.preload = "auto";
+        v.addEventListener("seeked", onSeeked);
+        v.src = objectUrl;
+        await new Promise<void>((resolve, reject) => {
+          v.addEventListener("loadeddata", () => resolve(), { once: true });
+          v.addEventListener("error", () => reject(v.error), { once: true });
+        });
+        if (disposed) return;
+        video = v;
+        source = v;
+        gsap.ticker.add(tick);
+      } catch {
+        // No video (unsupported codec, network error): keep the still.
+        if (!disposed) loadStill();
+      }
+    };
+
     let started = false;
     const start = () => {
       if (disposed || started) return;
       started = true;
-      gsap.ticker.add(tick);
-      for (let k = 0; k < CONCURRENCY; k++) pump();
+      if (still) loadStill();
+      else void loadVideo();
     };
 
     // Kick-off: the visitor's first gesture, or otherwise a short grace
-    // period after load plus an idle slot. Starting on `load` alone let the
-    // frame requests begin before the hero had painted on slow devices,
-    // which drags the whole sequence into the LCP critical path.
+    // period after load plus an idle slot, so the download never lands in
+    // the critical path of the hero.
     const GRACE_MS = 1500;
     const w = window as typeof window & {
       requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
@@ -296,13 +277,18 @@ export default function SequenceBackground() {
 
     return () => {
       disposed = true;
-      queue.length = 0;
       window.clearTimeout(timer);
       if (idleId) w.cancelIdleCallback?.(idleId);
       gestureEvents.forEach((e) => window.removeEventListener(e, start));
       window.removeEventListener("load", afterLoad);
       window.removeEventListener("resize", resize);
       gsap.ticker.remove(tick);
+      if (video) {
+        video.removeEventListener("seeked", onSeeked);
+        video.removeAttribute("src");
+        video.load();
+      }
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, []);
 
@@ -341,10 +327,7 @@ export default function SequenceBackground() {
         </div>
       </div>
 
-      {/*
-        Scrim. Keeps ivory text readable over the footage — strongest at the
-        bottom, where the golden sunrise is at its brightest.
-      */}
+      {/* Scrim. Keeps ivory text readable over the footage. */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
