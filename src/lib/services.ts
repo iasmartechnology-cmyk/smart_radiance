@@ -10,7 +10,7 @@
  *   /optimizacion-web  → commercial: improving a site that already exists
  *   /seo               → commercial: ranking and organic visibility
  *   /indexacion-google → problem-aware: "my site doesn't show up on Google"
- *   /automatizacion-ia → commercial: removing repetitive manual work
+ *   /automatizacion-ia → commercial: custom automations tailored to the business
  */
 
 export type Faq = { q: string; a: string };
@@ -303,15 +303,22 @@ export const servicePages: ServicePage[] = [
   {
     slug: "automatizacion-ia",
     index: "05",
-    title: "Automatización con IA",
-    body: "Conectamos tu web, tu CRM y tus herramientas para que las tareas repetitivas dejen de hacerse a mano: leads, seguimientos, reservas y respuestas.",
-    metaTitle: "Automatización de procesos con IA",
+    title: "Automatizaciones a medida",
+    body: "Automatizaciones diseñadas según tu negocio: conectamos tu web, tu CRM y tus herramientas para que leads, seguimientos, reservas y respuestas dejen de hacerse a mano.",
+    metaTitle: "Automatizaciones a medida para tu negocio",
     metaDescription:
-      "Automatizamos procesos comerciales y operativos con IA: captación y cualificación de leads, CRM, email, WhatsApp, reservas y seguimientos. Menos trabajo manual.",
-    h1: "Automatización de procesos con IA",
+      "Automatizaciones a medida según tu negocio, con IA cuando aporta: leads, CRM, email, WhatsApp, reservas y seguimientos. Menos trabajo manual, más tiempo para vender.",
+    h1: "Automatizaciones a medida según tu negocio",
     intro:
-      "Cada hora que tu equipo dedica a copiar datos, responder lo mismo de siempre o perseguir seguimientos es una hora que no dedica a vender. Automatizamos esas tareas y conectamos las herramientas que ya usas.",
+      "Cada hora que tu equipo dedica a copiar datos, responder lo mismo de siempre o perseguir seguimientos es una hora que no dedica a vender. Diseñamos automatizaciones a medida de cómo trabaja tu negocio y conectamos las herramientas que ya usas.",
     sections: [
+      {
+        h2: "Automatización a medida, no plantillas",
+        paragraphs: [
+          "Una clínica, una inmobiliaria y un restaurante no pierden el tiempo en las mismas tareas. Por eso no instalamos flujos genéricos: estudiamos tu proceso real, tus herramientas y tu volumen de trabajo, y construimos la automatización que encaja con tu negocio.",
+          "Algunos ejemplos: recordatorios de citas por WhatsApp para clínicas, cualificación de leads de portales para inmobiliarias, reservas conectadas a la agenda para hostelería o presupuestos generados desde un formulario para servicios profesionales.",
+        ],
+      },
       {
         h2: "Qué se puede automatizar",
         paragraphs: [

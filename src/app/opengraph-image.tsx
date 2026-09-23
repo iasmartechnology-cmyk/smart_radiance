@@ -40,7 +40,7 @@ export default function OpengraphImage() {
           <span>a la cima.</span>
         </div>
         <div style={{ display: "flex", color: "#c3c3cc", fontSize: 28 }}>
-          Diseño web · Optimización · Posicionamiento SEO
+          Diseño web · SEO · Automatizaciones a medida
         </div>
       </div>
     ),

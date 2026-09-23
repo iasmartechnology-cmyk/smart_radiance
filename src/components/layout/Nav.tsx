@@ -100,7 +100,7 @@ export default function Nav() {
             {site.name}
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-1 lg:flex">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
@@ -133,7 +133,7 @@ export default function Nav() {
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? "Cerrar menú" : "Abrir menú"}
-              className="text-body text-ivory md:hidden"
+              className="text-body text-ivory lg:hidden"
             >
               {open ? "Cerrar" : "Menú"}
             </button>
@@ -145,7 +145,7 @@ export default function Nav() {
       <div
         id="mobile-menu"
         hidden={!open}
-        className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-onyx/95 backdrop-blur-md md:hidden"
+        className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-7 bg-onyx/95 backdrop-blur-md lg:hidden"
       >
         {navLinks.map((link) => (
           <Link

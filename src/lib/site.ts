@@ -37,12 +37,13 @@ export const site = {
     ),
   tagline: "Diseño web y SEO para negocios que escalan",
   description:
-    "Smart Radiance es la agencia digital que ayuda a los negocios a escalar: diseño y desarrollo web, posicionamiento SEO y automatización de procesos con IA.",
+    "Smart Radiance es la agencia digital que ayuda a los negocios a escalar: diseño y desarrollo web, posicionamiento SEO y automatizaciones a medida según tu negocio.",
 } as const;
 
 export const navLinks = [
   { label: "Inicio", href: "#inicio" },
   { label: "Servicios", href: "#servicios" },
+  { label: "Automatización", href: "#automatizacion" },
   { label: "Proceso", href: "#proceso" },
   { label: "Contacto", href: "#contacto" },
 ] as const;

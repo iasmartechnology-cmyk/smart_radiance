@@ -16,7 +16,7 @@ export default function Services() {
           <HeadingReveal
             as="h2"
             onScroll
-            lines={["Diseño web, SEO", "y automatización con IA."]}
+            lines={["Diseño web, SEO", "y automatizaciones a medida."]}
             className="text-heading-lg mt-5 text-ivory"
           />
         </div>

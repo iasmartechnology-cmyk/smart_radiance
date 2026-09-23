@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import Manifesto from "@/components/sections/Manifesto";
 import Services from "@/components/sections/Services";
+import Automation from "@/components/sections/Automation";
 import Process from "@/components/sections/Process";
 import Results from "@/components/sections/Results";
 import Contact from "@/components/sections/Contact";
@@ -12,9 +13,9 @@ import { site } from "@/lib/site";
  * web y SEO"); the four service pages take the specific commercial intents so
  * they don't compete with this one.
  */
-const title = "Diseño web y posicionamiento SEO | Smart Radiance";
+const title = "Diseño web, SEO y automatizaciones a medida | Smart Radiance";
 const description =
-  "Agencia de diseño web y posicionamiento SEO. Creamos páginas web para empresas, mejoramos tu visibilidad en Google y automatizamos procesos con IA.";
+  "Agencia de diseño web y SEO. Creamos webs para empresas, mejoramos tu visibilidad en Google y diseñamos automatizaciones a medida según tu negocio.";
 
 export const metadata: Metadata = {
   // `absolute` bypasses the layout's "%s · Smart Radiance" template, which
@@ -39,6 +40,7 @@ export default function Home() {
       <Hero />
       <Manifesto />
       <Services />
+      <Automation />
       <Process />
       <Results />
       <Contact />

@@ -10,9 +10,40 @@ const nextConfig: NextConfig = {
   agentRules: false,
   // Pin the workspace root so a stray lockfile in a parent dir isn't inferred.
   turbopack: { root: projectRoot },
+  // No framework fingerprint in responses.
+  poweredByHeader: false,
+  reactStrictMode: true,
+  compiler: {
+    // Strip console.* from production bundles (errors are kept).
+    removeConsole: { exclude: ["error"] },
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ];
+  },
   // Trim client bundles by transpiling only what's used from these libs.
   experimental: {
-    optimizePackageImports: ["@react-three/drei", "gsap"],
+    optimizePackageImports: [
+      "@react-three/drei",
+      "@react-three/postprocessing",
+      "gsap",
+    ],
   },
 };
 

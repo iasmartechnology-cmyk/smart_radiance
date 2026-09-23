@@ -34,6 +34,15 @@ export default function JsonLd() {
         address: { "@type": "PostalAddress", addressCountry: "ES" },
         areaServed: { "@type": "Country", name: "España" },
         knowsLanguage: ["es"],
+        knowsAbout: [
+          "Diseño web",
+          "Desarrollo web",
+          "Posicionamiento SEO",
+          "Optimización web",
+          "Core Web Vitals",
+          "Automatización de procesos",
+          "Inteligencia artificial aplicada a empresas",
+        ],
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "customer service",
@@ -44,7 +53,7 @@ export default function JsonLd() {
         },
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: "Servicios de diseño web, posicionamiento SEO y automatización",
+          name: "Servicios de diseño web, posicionamiento SEO y automatizaciones a medida",
           itemListElement: servicePages.map((s) => ({
             "@type": "Offer",
             itemOffered: {

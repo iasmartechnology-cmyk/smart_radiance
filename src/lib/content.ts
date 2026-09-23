@@ -43,3 +43,42 @@ export const stats = [
   { value: "24 h", label: "Tiempo de respuesta" },
   { value: "1:1", label: "Trato directo" },
 ] as const;
+
+/**
+ * Homepage "automatizaciones a medida" block. Each entry is a business type
+ * with the automations that actually pay off for it — concrete examples rank
+ * and convert better than a generic "automatizamos procesos".
+ */
+export const automationUseCases = [
+  {
+    sector: "Clínicas y centros de salud",
+    body: "Citas y recordatorios automáticos por WhatsApp, confirmación de asistencia y respuestas a las dudas frecuentes de los pacientes.",
+  },
+  {
+    sector: "Inmobiliarias",
+    body: "Captación de leads desde portales y web, cualificación automática y alta en el CRM con seguimiento programado.",
+  },
+  {
+    sector: "Restaurantes y hostelería",
+    body: "Reservas conectadas a tu agenda, confirmaciones, gestión de reseñas y avisos al equipo sin llamadas ni libretas.",
+  },
+  {
+    sector: "Comercios y e-commerce",
+    body: "Pedidos, stock, facturas y seguimiento postventa sincronizados entre la tienda, el email y tu gestión interna.",
+  },
+  {
+    sector: "Despachos y servicios profesionales",
+    body: "Presupuestos, contratos y documentación generados a partir de un formulario, con recordatorios de cobro y seguimiento.",
+  },
+  {
+    sector: "Academias y formación",
+    body: "Inscripciones, pagos, accesos y comunicaciones con alumnos automatizados de principio a fin.",
+  },
+] as const;
+
+export const automationSteps = [
+  "Analizamos cómo trabaja tu negocio hoy",
+  "Detectamos las tareas repetitivas que más tiempo cuestan",
+  "Diseñamos y conectamos la automatización con tus herramientas",
+  "Medimos las horas ahorradas y la ampliamos",
+] as const;

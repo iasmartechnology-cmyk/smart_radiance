@@ -27,26 +27,60 @@ export default function SceneBackground() {
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const saveData = Boolean(
-      (
-        navigator as Navigator & {
-          connection?: { saveData?: boolean };
-        }
-      ).connection?.saveData,
-    );
-    if (reduced || saveData) return;
+    const nav = navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+      deviceMemory?: number;
+    };
+    const saveData = Boolean(nav.connection?.saveData);
+    // Slow networks and low-end hardware get the CSS wash: a multi-hundred-KB
+    // WebGL bundle there costs far more in blocking time than it gives back.
+    const slowNet = /(^|-)2g$/.test(nav.connection?.effectiveType ?? "");
+    const lowEnd =
+      (nav.deviceMemory !== undefined && nav.deviceMemory < 4) ||
+      (navigator.hardwareConcurrency || 8) <= 2;
+    if (reduced || saveData || slowNet || lowEnd) return;
 
     const w = window as typeof window & {
-      requestIdleCallback?: (cb: () => void) => number;
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout: number },
+      ) => number;
       cancelIdleCallback?: (id: number) => void;
     };
     let idleId = 0;
-    const mount = () => setMounted(true);
-    if (typeof w.requestIdleCallback === "function") {
-      idleId = w.requestIdleCallback(mount);
-    }
-    const timer = window.setTimeout(mount, 700);
+    let timer = 0;
+    let done = false;
+    const mount = () => {
+      if (done) return;
+      done = true;
+      setMounted(true);
+    };
+
+    // Wait for the page's own load (hero, fonts, hydration) to finish, then
+    // for an idle slot, so the scene's parse/compile never competes with
+    // first paint or the first interaction. The first scroll or pointer move
+    // mounts it straight away — by then the user is engaged.
+    const schedule = () => {
+      if (typeof w.requestIdleCallback === "function") {
+        idleId = w.requestIdleCallback(mount, { timeout: 2500 });
+      } else {
+        timer = window.setTimeout(mount, 1200);
+      }
+    };
+    const onInteract = () => mount();
+    const interactOpts = { once: true, passive: true } as const;
+    window.addEventListener("scroll", onInteract, interactOpts);
+    window.addEventListener("pointermove", onInteract, interactOpts);
+    window.addEventListener("touchstart", onInteract, interactOpts);
+
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+
     return () => {
+      window.removeEventListener("load", schedule);
+      window.removeEventListener("scroll", onInteract);
+      window.removeEventListener("pointermove", onInteract);
+      window.removeEventListener("touchstart", onInteract);
       window.clearTimeout(timer);
       if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
     };

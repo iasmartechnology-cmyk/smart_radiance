@@ -20,7 +20,7 @@ export default function Hero() {
       if (reduced || !root.current) return;
       const q = gsap.utils.selector(root);
       const tl = gsap.timeline({
-        delay: 0.35,
+        delay: 0.1,
         defaults: { ease: "power4.out" },
       });
       tl.from(q("[data-eyebrow]"), { opacity: 0, y: 14, duration: 0.8 })
@@ -63,7 +63,8 @@ export default function Hero() {
 
         <p data-body className="text-body-lg mt-6 max-w-[52ch] text-ash">
           Diseñamos, desarrollamos y posicionamos páginas web para empresas que
-          quieren ganar visibilidad en Google y convertir visitas en clientes.
+          quieren ganar visibilidad en Google, y creamos automatizaciones a
+          medida según tu negocio para que ganes tiempo.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
