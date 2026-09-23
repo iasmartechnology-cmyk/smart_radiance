@@ -202,3 +202,29 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Homepage background reveal. The footage starts as a rounded window behind
+ * the hero headline and opens to full screen as the hero scrolls away (GSAP
+ * scrubs both properties from these values — see SequenceBackground). Set in
+ * CSS so the server-rendered first paint already shows the window.
+ */
+.bg-window {
+  clip-path: inset(30% 6% 22% 6% round 24px);
+}
+.bg-window > .bg-zoom {
+  transform: scale(1.25);
+}
+@media (min-width: 768px) {
+  .bg-window {
+    clip-path: inset(24% 22% 18% 22% round 28px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-window {
+    clip-path: none;
+  }
+  .bg-window > .bg-zoom {
+    transform: none;
+  }
+}

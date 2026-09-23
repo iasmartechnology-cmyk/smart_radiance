@@ -1,25 +1,39 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "@/lib/gsap";
+import { usePathname } from "next/navigation";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { scrollState } from "@/lib/scroll-store";
 import { damp } from "@/lib/utils";
 
 /**
  * Photographic, scroll-driven backdrop.
  *
- * Real drone footage (blue hour over a sea of fog, fading into a golden
- * sunrise above the clouds at the summit) is pre-cut into still frames by
+ * Real drone footage (a flight up a misty snow valley towards the peaks,
+ * fading into a golden sunrise above the clouds at the summit) is pre-cut into still frames by
  * scripts/build-sequence.sh and scrubbed on a 2D canvas as the page scrolls —
  * the technique Apple uses on its product pages. Unlike the old WebGL scene it
  * needs no GPU, ships no 3D library and costs next to nothing per frame: a
  * redraw only happens when the frame index actually changes.
  *
- * Layers, bottom to top: CSS wash → poster image → canvas → scrim.
+ * On the homepage the footage opens as a reveal: it starts inside a rounded
+ * window behind the hero headline, and as the hero scrolls away the window
+ * grows to full screen while the camera pushes in. Other pages get the full
+ * backdrop straight away.
+ *
+ * Layers, bottom to top: onyx wash → window (clip) → zoom → poster + canvas →
+ * scrim.
  */
 const SEQUENCE = {
-  desktop: { path: "/sequence/desktop/", count: 96 },
-  mobile: { path: "/sequence/mobile/", count: 64 },
+  desktop: { path: "/sequence/desktop/", count: 112 },
+  mobile: { path: "/sequence/mobile/", count: 80 },
+} as const;
+
+/** Window the reveal opens from — must match `.bg-window` in globals.css. */
+const WINDOW = {
+  mobile: "inset(30% 6% 22% 6% round 24px)",
+  desktop: "inset(24% 22% 18% 22% round 28px)",
+  open: "inset(0% 0% 0% 0% round 0px)",
 } as const;
 
 /** Parallel downloads — enough to fill the pipe without starving the page. */
@@ -52,6 +66,45 @@ function loadOrder(count: number): number[] {
 
 export default function SequenceBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const windowRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<HTMLDivElement>(null);
+  const isHome = usePathname() === "/";
+
+  // The reveal: one scrubbed timeline over the hero's own scroll distance.
+  // Under reduced motion the CSS already shows the backdrop full-screen and
+  // nothing is animated.
+  useGSAP(
+    () => {
+      const hero = document.getElementById("inicio");
+      if (!isHome || !hero || !windowRef.current || !zoomRef.current) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const mm = gsap.matchMedia();
+      mm.add(
+        { mobile: "(max-width: 767px)", desktop: "(min-width: 768px)" },
+        (ctx) => {
+          const from = ctx.conditions?.mobile ? WINDOW.mobile : WINDOW.desktop;
+          const tl = gsap.timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: {
+              trigger: hero,
+              start: "top top",
+              end: "bottom top",
+              scrub: 0.6,
+            },
+          });
+          tl.fromTo(
+            windowRef.current,
+            { clipPath: from },
+            { clipPath: WINDOW.open },
+            0,
+          ).fromTo(zoomRef.current, { scale: 1.25 }, { scale: 1 }, 0);
+        },
+      );
+      return () => mm.revert();
+    },
+    { dependencies: [isHome] },
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -190,19 +243,35 @@ export default function SequenceBackground() {
       aria-hidden="true"
       className="fixed inset-0 -z-10 overflow-hidden"
       style={{
-        // Instant blue-hour wash, then the poster frame on top of it.
-        backgroundColor: "#12121b",
-        backgroundImage:
-          "url(/sequence/poster.webp), linear-gradient(180deg, #12121b 0%, #1b1c28 45%, #171721 100%)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        // Onyx wash — what surrounds the window before the reveal opens.
+        background:
+          "linear-gradient(180deg, #12121b 0%, #1b1c28 45%, #171721 100%)",
       }}
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700"
-        style={{ transform: "scale(1.04)" }}
-      />
+      {/* Window (clip) → zoom (push-in) → footage. Kept as separate layers
+          so the clip, the zoom and the pointer parallax never fight over the
+          same transform. */}
+      <div
+        ref={windowRef}
+        className={`absolute inset-0 will-change-[clip-path] ${isHome ? "bg-window" : ""}`}
+      >
+        <div
+          ref={zoomRef}
+          className="bg-zoom absolute inset-0 will-change-transform"
+          style={{
+            backgroundColor: "#12121b",
+            backgroundImage: "url(/sequence/poster.webp)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700"
+            style={{ transform: "scale(1.04)" }}
+          />
+        </div>
+      </div>
 
       {/*
         Scrim. Keeps ivory text readable over the footage — strongest at the
