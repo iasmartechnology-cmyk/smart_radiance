@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "render:cpu": "node scripts/render-cpu/render.mjs --mode desktop --out .render/desktop && node scripts/render-cpu/render.mjs --mode mobile --out .render/mobile",
+    "encode:cpu": "bash scripts/render-cpu/encode.sh .render/desktop .render/mobile"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -23,7 +25,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "puppeteer-core": "^25.12.0",
     "tailwindcss": "^4",
+    "three": "^0.186.0",
     "typescript": "^5"
   }
 }

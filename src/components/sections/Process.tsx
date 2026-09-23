@@ -13,7 +13,7 @@ export default function Process() {
   const reduced = usePrefersReducedMotion();
 
   // Desktop-only scrubbed rope line that fills as you climb the section —
-  // the DOM echo of the camera gaining altitude behind it.
+  // the DOM echo of the layers separating behind it.
   useGSAP(
     () => {
       if (reduced) return;
@@ -49,15 +49,15 @@ export default function Process() {
     >
       <div className="shell grid gap-14 md:grid-cols-[minmax(0,22rem)_1fr] md:gap-20">
         <div className="md:sticky md:top-28 md:self-start">
-          <p className="text-caption text-cobalt">La ruta</p>
+          <p className="text-caption text-cobalt">El proceso</p>
           <HeadingReveal
             as="h2"
             onScroll
-            lines={["Cuatro tramos", "hasta la cima."]}
+            lines={["Cuatro capas,", "un sistema."]}
             className="text-heading-lg mt-5 text-ivory"
           />
           <p className="text-body mt-6 max-w-[34ch] text-ash">
-            Un método claro y medible, del campo base al crecimiento sostenido.
+            Un método claro y medible, de la primera capa al sistema en marcha.
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export default function Process() {
                       {step.index}
                     </span>
                     <span className="text-caption text-cobalt">
-                      {step.altitude}
+                      {step.layer}
                     </span>
                   </div>
                   <h3 className="text-heading-sm mt-3 text-ivory">

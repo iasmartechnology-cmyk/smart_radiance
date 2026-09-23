@@ -7,16 +7,18 @@ import { scrollState } from "@/lib/scroll-store";
 import { damp } from "@/lib/utils";
 
 /**
- * Photographic, scroll-driven backdrop.
+ * Scroll-driven backdrop: a processor that comes apart layer by layer —
+ * heat spreader, thermal layer, dies, substrate, contacts — powers up, and
+ * reassembles at the end of the page.
  *
- * Real drone footage (a flight up a misty snow valley towards the peaks,
- * fading into a golden sunrise above the clouds at the summit) is pre-cut into still frames by
- * scripts/build-sequence.sh and scrubbed on a 2D canvas as the page scrolls —
- * the technique Apple uses on its product pages. Unlike the old WebGL scene it
+ * It is rendered offline (scripts/render-cpu: a Three.js scene captured
+ * frame by frame in headless Chrome) and scrubbed here as still frames on a
+ * 2D canvas as the page scrolls — the technique Apple uses on its product
+ * pages. Unlike the old WebGL scene it
  * needs no GPU, ships no 3D library and costs next to nothing per frame: a
  * redraw only happens when the frame index actually changes.
  *
- * On the homepage the footage opens as a reveal: it starts inside a rounded
+ * On the homepage the backdrop opens as a reveal: it starts inside a rounded
  * window behind the hero headline, and as the hero scrolls away the window
  * grows to full screen while the camera pushes in. Other pages get the full
  * backdrop straight away.
@@ -25,8 +27,8 @@ import { damp } from "@/lib/utils";
  * scrim.
  */
 const SEQUENCE = {
-  desktop: { path: "/sequence/desktop/", count: 112 },
-  mobile: { path: "/sequence/mobile/", count: 80 },
+  desktop: { path: "/sequence/desktop/", count: 150 },
+  mobile: { path: "/sequence/mobile/", count: 100 },
 } as const;
 
 /** Window the reveal opens from — must match `.bg-window` in globals.css. */
@@ -101,7 +103,7 @@ export default function SequenceBackground() {
             { clipPath: from },
             { clipPath: WINDOW.open },
             0,
-          ).fromTo(zoomRef.current, { scale: 1.25 }, { scale: 1 }, 0);
+          ).fromTo(zoomRef.current, { scale: 1.15 }, { scale: 1 }, 0);
         },
       );
       return () => mm.revert();

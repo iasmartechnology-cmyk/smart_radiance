@@ -12,7 +12,7 @@ export default function Services() {
     >
       <div className="shell">
         <div className="max-w-[46ch]">
-          <p className="text-caption text-cobalt">Equipo de ruta</p>
+          <p className="text-caption text-cobalt">Componentes</p>
           <HeadingReveal
             as="h2"
             onScroll

@@ -2,8 +2,8 @@ import HeadingReveal from "@/components/animations/HeadingReveal";
 import Reveal from "@/components/animations/Reveal";
 
 /**
- * First stage of the ascent — the "why". Text sits to one side so the range
- * stays visible in the frame as the camera starts to gain altitude.
+ * The "why". Text sits to the left so the processor, which starts coming
+ * apart behind it here, stays in view on the right.
  */
 export default function Manifesto() {
   return (
@@ -13,7 +13,7 @@ export default function Manifesto() {
     >
       <div className="shell grid gap-12 md:grid-cols-2 md:items-center">
         <div>
-          <p className="text-caption text-cobalt">El ascenso</p>
+          <p className="text-caption text-cobalt">El núcleo</p>
           <HeadingReveal
             as="h2"
             onScroll
@@ -24,7 +24,7 @@ export default function Manifesto() {
 
         <Reveal as="div" className="md:max-w-[44ch] md:justify-self-end">
           <p className="text-body-lg text-ash">
-            Es cuestión de ruta. Una web rápida, clara y bien posicionada
+            Es cuestión de ingeniería. Una web rápida, clara y bien posicionada
             convierte visitas en clientes de forma constante — no por un pico
             puntual, sino por una subida sostenida.
           </p>

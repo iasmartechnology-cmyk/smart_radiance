@@ -5,7 +5,7 @@ import MagneticButton from "@/components/ui/MagneticButton";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 
-// The H1 keeps the brand's ascent metaphor but leads with what the agency
+// The H1 keeps the "a la cima" idiom but leads with what the agency
 // actually does, so the page's most important heading carries real search
 // relevance instead of only atmosphere.
 const HEADLINE = ["Diseño web y SEO", "que llevan tu negocio", "a la cima."];
@@ -88,7 +88,7 @@ export default function Hero() {
         aria-hidden="true"
         className="text-caption absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-ash"
       >
-        <span>Comienza el ascenso</span>
+        <span>Desliza para ver el interior</span>
         <span className="h-10 w-px bg-ash/40" />
       </div>
     </section>

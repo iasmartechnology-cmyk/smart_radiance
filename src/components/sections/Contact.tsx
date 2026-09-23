@@ -4,9 +4,9 @@ import MagneticButton from "@/components/ui/MagneticButton";
 import { site } from "@/lib/site";
 
 /**
- * The summit. Contact is direct — phone or email, no form, no friction.
+ * Power-on. Contact is direct — phone or email, no form, no friction.
  * The content sits on a graphite card so it stays legible against the fully
- * lit sky behind it at the end of the ascent.
+ * processor powering on behind it at the end of the page.
  */
 export default function Contact() {
   return (
@@ -19,7 +19,7 @@ export default function Contact() {
         <div className="card md:p-12">
           <div className="grid gap-12 md:grid-cols-2 md:items-start">
             <div>
-              <p className="text-caption text-cobalt">La cima</p>
+              <p className="text-caption text-cobalt">Encendido</p>
               <HeadingReveal
                 as="h2"
                 onScroll

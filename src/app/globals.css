@@ -213,7 +213,7 @@
   clip-path: inset(30% 6% 22% 6% round 24px);
 }
 .bg-window > .bg-zoom {
-  transform: scale(1.25);
+  transform: scale(1.15);
 }
 @media (min-width: 768px) {
   .bg-window {
