@@ -502,7 +502,7 @@ composer.addPass(new OutputPass());
 
 // ------------------------------------------------------------------ frame
 const aim = new THREE.Vector3();
-window.renderFrame = (t) => {
+const renderAt = (t) => {
   // Layer heights, assembled → exploded → reassembled.
   const lift = (a, b) => seg(t, a, b);
   const down = seg(t, 0.8, 0.96);
@@ -543,6 +543,29 @@ window.renderFrame = (t) => {
   camera.lookAt(aim);
 
   composer.render();
+};
+
+// Motion blur by temporal supersampling: each published frame is the average
+// of several instants spread across its own slice of the timeline, like a
+// film camera's open shutter. Scrubbing then blends between frames that
+// already carry their motion, so it reads as continuous movement instead of
+// sharp edges cross-dissolving into a double outline.
+const acc = document.createElement("canvas");
+acc.width = W;
+acc.height = H;
+acc.style.cssText = "position:fixed;inset:0;width:100%;height:100%";
+document.body.appendChild(acc);
+const accCtx = acc.getContext("2d");
+
+window.renderFrame = (t, span = 0, samples = 1) => {
+  for (let k = 0; k < samples; k++) {
+    const tt = clamp01(t + span * ((k + 0.5) / samples - 0.5));
+    renderAt(tt);
+    // Running average: sample k is weighted 1/(k+1).
+    accCtx.globalAlpha = 1 / (k + 1);
+    accCtx.drawImage(renderer.domElement, 0, 0);
+  }
+  accCtx.globalAlpha = 1;
 };
 
 window.renderFrame(0);

@@ -27,8 +27,8 @@ import { damp } from "@/lib/utils";
  * scrim.
  */
 const SEQUENCE = {
-  desktop: { path: "/sequence/desktop/", count: 150 },
-  mobile: { path: "/sequence/mobile/", count: 100 },
+  desktop: { path: "/sequence/desktop/", count: 300 },
+  mobile: { path: "/sequence/mobile/", count: 200 },
 } as const;
 
 /** Window the reveal opens from — must match `.bg-window` in globals.css. */
@@ -40,8 +40,13 @@ const WINDOW = {
 
 /** Parallel downloads — enough to fill the pipe without starving the page. */
 const CONCURRENCY = 6;
-/** Resolution ceiling; frames are 1280 px wide, more DPR buys nothing. */
-const MAX_DPR = 1.5;
+/**
+ * Backing-store ceiling. Frames are 1280 px wide, so a bigger canvas buys no
+ * detail — it only multiplies the pixels blended and composited on every
+ * scroll frame (a 1.5× DPR on a wide screen is ~3000 px across). The browser
+ * upscales the canvas to the screen on the GPU for free.
+ */
+const MAX_CANVAS_WIDTH = 1600;
 
 /** Single still used where the full sequence isn't worth loading. */
 const POSTER = "/sequence/poster.webp";
@@ -197,7 +202,10 @@ export default function SequenceBackground() {
     };
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        MAX_CANVAS_WIDTH / window.innerWidth,
+      );
       canvas.width = Math.round(window.innerWidth * dpr);
       canvas.height = Math.round(window.innerHeight * dpr);
       draw(); // resizing clears the canvas

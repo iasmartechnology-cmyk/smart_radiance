@@ -2,7 +2,8 @@
  * Renders the CPU scene (scene.html) to PNG frames with headless Chrome.
  *
  *   node scripts/render-cpu/render.mjs --out <dir> [--mode desktop|mobile]
- *        [--frames 150] [--at 0,0.25,0.5]   (--at renders only those t values)
+ *        [--frames 300] [--samples 4] [--at 0,0.25,0.5]
+ *        (--at renders only those t values)
  *
  * Frames are rendered at 2× the published size (2560×1440 landscape,
  * 1440×2560 portrait) and downscaled by encode.sh, which is what gives the
@@ -20,7 +21,9 @@ const arg = (name, fallback) => {
   return i > -1 ? process.argv[i + 1] : fallback;
 };
 const mode = arg("mode", "desktop");
-const frames = Number(arg("frames", mode === "desktop" ? 150 : 100));
+const frames = Number(arg("frames", mode === "desktop" ? 300 : 200));
+// Sub-frame samples per frame for motion blur (see renderFrame in scene.js).
+const samples = Number(arg("samples", 4));
 const out = path.resolve(arg("out", ""));
 const at = arg("at", "");
 if (!out) throw new Error("--out <dir> is required");
@@ -62,10 +65,18 @@ try {
     ? at.split(",").map(Number)
     : Array.from({ length: frames }, (_, i) => i / (frames - 1));
   const started = Date.now();
+  // Each frame's shutter spans exactly its own slice of the timeline.
+  const span = at ? 0 : 1 / (frames - 1);
   for (const [i, t] of list.entries()) {
     await page.evaluate(
-      (t) => new Promise((r) => { window.renderFrame(t); requestAnimationFrame(() => r()); }),
+      (t, span, samples) =>
+        new Promise((r) => {
+          window.renderFrame(t, span, samples);
+          requestAnimationFrame(() => r());
+        }),
       t,
+      span,
+      samples,
     );
     const name = at ? `t${t.toFixed(3)}.png` : `${String(i).padStart(4, "0")}.png`;
     await page.screenshot({ path: path.join(out, name), type: "png" });
