@@ -27,7 +27,13 @@ const Effects = dynamic(() => import("./Effects"), { ssr: false });
  * It also stops entirely while the tab is hidden — there is nobody to render
  * for, and browsers still charge us for the frames.
  */
-function RenderScheduler({ fps }: { fps: number }) {
+function RenderScheduler({
+  fps,
+  onSlow,
+}: {
+  fps: number;
+  onSlow?: () => void;
+}) {
   const invalidate = useThree((s) => s.invalidate);
 
   useEffect(() => {
@@ -35,9 +41,41 @@ function RenderScheduler({ fps }: { fps: number }) {
     let last = 0;
     const interval = 1000 / fps;
 
+    // Watchdog. Frames render inside rAF, so the gap between callbacks is
+    // what the scene really costs the main thread. After a warm-up (shader
+    // compilation is legitimately slow), if the average gap stays well over
+    // budget the device can't carry the scene and it is dropped rather than
+    // left to starve scrolling and input.
+    const WARMUP_MS = 1500;
+    const SAMPLE_FRAMES = 40;
+    const SLOW_GAP_MS = 1000 / 18;
+    let start = 0;
+    let prev = 0;
+    let sum = 0;
+    let count = 0;
+    let watching = Boolean(onSlow);
+
     const loop = (time: number) => {
       raf = requestAnimationFrame(loop);
-      if (document.hidden) return;
+      if (document.hidden) {
+        prev = 0;
+        return;
+      }
+      if (watching) {
+        if (!start) start = time;
+        if (prev && time - start > WARMUP_MS) {
+          sum += time - prev;
+          if (++count >= SAMPLE_FRAMES) {
+            watching = false;
+            if (sum / count > SLOW_GAP_MS) {
+              cancelAnimationFrame(raf);
+              onSlow?.();
+              return;
+            }
+          }
+        }
+        prev = time;
+      }
       if (time - last < interval) return;
       last = time;
       invalidate();
@@ -45,7 +83,7 @@ function RenderScheduler({ fps }: { fps: number }) {
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [fps, invalidate]);
+  }, [fps, invalidate, onSlow]);
 
   return null;
 }
@@ -55,7 +93,7 @@ function RenderScheduler({ fps }: { fps: number }) {
  * counts, post-processing) all step down on mobile; under reduced-motion the
  * scene is never mounted at all — see SceneBackground.
  */
-export default function SceneCanvas() {
+export default function SceneCanvas({ onSlow }: { onSlow?: () => void }) {
   const mobile = useIsMobile();
   const reduced = usePrefersReducedMotion();
 
@@ -85,7 +123,7 @@ export default function SceneCanvas() {
       <Suspense fallback={null}>
         <Scene reduced={reduced} mobile={mobile} />
         {!reduced && !mobile && <Effects />}
-        <RenderScheduler fps={mobile ? 24 : 30} />
+        <RenderScheduler fps={mobile ? 24 : 30} onSlow={onSlow} />
       </Suspense>
     </Canvas>
   );

@@ -29,7 +29,9 @@ export default function Hero() {
           { yPercent: 115, duration: 1.05, stagger: 0.1 },
           "-=0.45",
         )
-        .from(q("[data-body]"), { opacity: 0, y: 20, duration: 0.9 }, "-=0.6")
+        // Transform only: the lead paragraph is the LCP element on phones,
+        // and fading it from opacity 0 would hold LCP back until the tween ends.
+        .from(q("[data-body]"), { y: 20, duration: 0.9 }, "-=0.6")
         .from(
           q("[data-cta]"),
           { opacity: 0, y: 16, duration: 0.7, stagger: 0.1 },

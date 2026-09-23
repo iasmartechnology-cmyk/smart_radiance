@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { hasHardwareWebGL } from "@/lib/gpu";
 
 /**
  * Fixed, full-viewport WebGL backdrop that sits behind all content.
@@ -15,10 +16,13 @@ const SceneCanvas = dynamic(() => import("./SceneCanvas"), { ssr: false });
 
 export default function SceneBackground() {
   const [mounted, setMounted] = useState(false);
+  // Set once the running scene proves too slow for this device; it is then
+  // torn down for good and the CSS wash takes over.
+  const [dropped, setDropped] = useState(false);
+  const onSlow = useCallback(() => setDropped(true), []);
 
-  // Defer WebGL until the browser is idle so the hero text paints first, but
-  // always mount within a hard timeout (idle callbacks are throttled in
-  // background/non-composited tabs).
+  // Defer WebGL until the visitor engages (or a grace period passes) so the
+  // hero, hydration and first input are never competing with it.
   useEffect(() => {
     // Skip the scene altogether where it can't pay for itself: under
     // reduced-motion it would download the whole Three.js bundle just to paint
@@ -39,15 +43,9 @@ export default function SceneBackground() {
       (nav.deviceMemory !== undefined && nav.deviceMemory < 4) ||
       (navigator.hardwareConcurrency || 8) <= 2;
     if (reduced || saveData || slowNet || lowEnd) return;
+    // No real GPU → WebGL would be rasterised on the CPU main thread.
+    if (!hasHardwareWebGL()) return;
 
-    const w = window as typeof window & {
-      requestIdleCallback?: (
-        cb: () => void,
-        opts?: { timeout: number },
-      ) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    let idleId = 0;
     let timer = 0;
     let done = false;
     const mount = () => {
@@ -56,16 +54,15 @@ export default function SceneBackground() {
       setMounted(true);
     };
 
-    // Wait for the page's own load (hero, fonts, hydration) to finish, then
-    // for an idle slot, so the scene's parse/compile never competes with
-    // first paint or the first interaction. The first scroll or pointer move
-    // mounts it straight away — by then the user is engaged.
+    // Starting the scene costs one unavoidable ~250 ms task (Three.js
+    // evaluation, shader compilation, baking the terrain). It is triggered by
+    // the visitor's first gesture — a mouse move, scroll or touch — which on
+    // desktop happens almost at once, so it never lands on top of the initial
+    // load and hydration. Visitors who don't touch anything get it after a
+    // grace period. The CSS wash covers the moment in between.
+    const FALLBACK_MS = 8000;
     const schedule = () => {
-      if (typeof w.requestIdleCallback === "function") {
-        idleId = w.requestIdleCallback(mount, { timeout: 2500 });
-      } else {
-        timer = window.setTimeout(mount, 1200);
-      }
+      timer = window.setTimeout(mount, FALLBACK_MS);
     };
     const onInteract = () => mount();
     const interactOpts = { once: true, passive: true } as const;
@@ -82,7 +79,6 @@ export default function SceneBackground() {
       window.removeEventListener("pointermove", onInteract);
       window.removeEventListener("touchstart", onInteract);
       window.clearTimeout(timer);
-      if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
     };
   }, []);
 
@@ -96,7 +92,7 @@ export default function SceneBackground() {
           "linear-gradient(180deg, #12121b 0%, #1b1c28 45%, #171721 100%)",
       }}
     >
-      {mounted && <SceneCanvas />}
+      {mounted && !dropped && <SceneCanvas onSlow={onSlow} />}
 
       {/*
         Scrim. As the sun clears the ridge the sky gets genuinely bright, which
