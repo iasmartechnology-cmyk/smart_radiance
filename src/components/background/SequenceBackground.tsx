@@ -41,6 +41,9 @@ const CONCURRENCY = 6;
 /** Resolution ceiling; frames are 1280 px wide, more DPR buys nothing. */
 const MAX_DPR = 1.5;
 
+/** Single still used where the full sequence isn't worth loading. */
+const POSTER = "/sequence/poster.webp";
+
 const frameUrl = (path: string, i: number) =>
   `${path}${String(i).padStart(3, "0")}.webp`;
 
@@ -111,9 +114,10 @@ export default function SequenceBackground() {
     const ctx = canvas?.getContext("2d", { alpha: false });
     if (!canvas || !ctx) return;
 
-    // Where the sequence can't pay for itself the poster stays as a still:
-    // reduced motion (a scrubbing backdrop is exactly the motion they opted
-    // out of) and Save-Data / 2G (a few MB of frames is not a fair trade).
+    // Where the sequence can't pay for itself only the poster is shown, as a
+    // still: reduced motion (a scrubbing backdrop is exactly the motion they
+    // opted out of) and Save-Data / 2G (a few MB of frames is not a fair
+    // trade).
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -123,13 +127,16 @@ export default function SequenceBackground() {
       }
     ).connection;
     const slowNet = /(^|-)2g$/.test(conn?.effectiveType ?? "");
-    if (reduced || conn?.saveData || slowNet) return;
+    const still = reduced || Boolean(conn?.saveData) || slowNet;
 
     // The set is picked once per visit: swapping sets on resize would throw
     // away every frame already downloaded.
-    const { path, count } = window.matchMedia("(max-width: 767px)").matches
-      ? SEQUENCE.mobile
-      : SEQUENCE.desktop;
+    const { path, count } = still
+      ? { path: "", count: 1 }
+      : window.matchMedia("(max-width: 767px)").matches
+        ? SEQUENCE.mobile
+        : SEQUENCE.desktop;
+    const urlFor = (i: number) => (still ? POSTER : frameUrl(path, i));
 
     const frames: (HTMLImageElement | null)[] = new Array(count).fill(null);
     let drawn = -1; // index of the frame currently on the canvas
@@ -194,15 +201,20 @@ export default function SequenceBackground() {
       }
     };
 
-    // Downloads start once the page itself has loaded, so frames never
-    // compete with the HTML, fonts and scripts that make up first paint.
+    // Downloads start well after first paint (see the kick-off below), so
+    // frames never compete with the HTML, fonts and scripts of the hero.
+    // Everything — the poster included — is drawn on the canvas rather than
+    // set as a CSS background: canvas paints are not LCP candidates, so the
+    // backdrop can never displace the hero text as the page's LCP element
+    // (a background image inside the animated window was being re-reported
+    // as LCP seconds later on phones).
     const queue = loadOrder(count);
     const pump = () => {
       const i = queue.shift();
       if (i === undefined || disposed) return;
       const img = new Image();
       img.decoding = "async";
-      img.src = frameUrl(path, i);
+      img.src = urlFor(i);
       // decode() keeps the JPEG/WebP decode off the main thread, so drawing
       // it later is a plain blit.
       img
@@ -221,18 +233,45 @@ export default function SequenceBackground() {
         .catch(() => {})
         .finally(pump);
     };
+    let started = false;
     const start = () => {
-      if (disposed) return;
+      if (disposed || started) return;
+      started = true;
       gsap.ticker.add(tick);
       for (let k = 0; k < CONCURRENCY; k++) pump();
     };
-    if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
+
+    // Kick-off: the visitor's first gesture, or otherwise a short grace
+    // period after load plus an idle slot. Starting on `load` alone let the
+    // frame requests begin before the hero had painted on slow devices,
+    // which drags the whole sequence into the LCP critical path.
+    const GRACE_MS = 1500;
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let timer = 0;
+    let idleId = 0;
+    const afterLoad = () => {
+      timer = window.setTimeout(() => {
+        if (w.requestIdleCallback) {
+          idleId = w.requestIdleCallback(start, { timeout: 1000 });
+        } else start();
+      }, GRACE_MS);
+    };
+    const gesture = { once: true, passive: true } as const;
+    const gestureEvents = ["scroll", "pointermove", "touchstart", "keydown"];
+    gestureEvents.forEach((e) => window.addEventListener(e, start, gesture));
+    if (document.readyState === "complete") afterLoad();
+    else window.addEventListener("load", afterLoad, { once: true });
 
     return () => {
       disposed = true;
       queue.length = 0;
-      window.removeEventListener("load", start);
+      window.clearTimeout(timer);
+      if (idleId) w.cancelIdleCallback?.(idleId);
+      gestureEvents.forEach((e) => window.removeEventListener(e, start));
+      window.removeEventListener("load", afterLoad);
       window.removeEventListener("resize", resize);
       gsap.ticker.remove(tick);
     };
@@ -258,11 +297,11 @@ export default function SequenceBackground() {
         <div
           ref={zoomRef}
           className="bg-zoom absolute inset-0 will-change-transform"
+          // A slightly lifted slate so the window reads as a shape at first
+          // paint; the footage fades in over it once the first frame lands.
           style={{
-            backgroundColor: "#12121b",
-            backgroundImage: "url(/sequence/poster.webp)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            background:
+              "linear-gradient(180deg, #1f2233 0%, #1a1c2a 60%, #171721 100%)",
           }}
         >
           <canvas
