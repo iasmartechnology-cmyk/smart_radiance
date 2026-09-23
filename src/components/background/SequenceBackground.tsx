@@ -139,8 +139,13 @@ export default function SequenceBackground() {
     const urlFor = (i: number) => (still ? POSTER : frameUrl(path, i));
 
     const frames: (HTMLImageElement | null)[] = new Array(count).fill(null);
-    let drawn = -1; // index of the frame currently on the canvas
-    let target = 0; // index the scroll position asks for
+    // Fractional frame position the scroll asks for (e.g. 40.3), and the
+    // position currently painted. Painting the fraction — rather than
+    // rounding to a whole frame — is what keeps slow scrolling fluid: with
+    // ~100 frames over the whole page a whole-frame step lands only every
+    // ~50 px, which reads as a stuttering slideshow.
+    let pos = 0;
+    let painted = -1;
     let smooth = scrollState.progress;
     let px = 0;
     let py = 0;
@@ -155,27 +160,45 @@ export default function SequenceBackground() {
       return -1;
     };
 
-    const draw = (force = false) => {
-      const i = nearestLoaded(target);
-      if (i < 0 || (i === drawn && !force)) return;
-      const img = frames[i]!;
+    /** object-fit: cover blit at the given opacity. */
+    const blit = (img: HTMLImageElement, alpha: number) => {
       const cw = canvas.width;
       const ch = canvas.height;
-      // object-fit: cover
       const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
       const w = img.naturalWidth * scale;
       const h = img.naturalHeight * scale;
+      ctx.globalAlpha = alpha;
       ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
-      if (drawn < 0) canvas.style.opacity = "1";
-      drawn = i;
+    };
+
+    /**
+     * Paint the scroll position as a blend of the two frames either side of
+     * it: frame `a` opaque, frame `a + 1` on top at the fractional weight.
+     * Until both neighbours have loaded, the nearest loaded frame is shown.
+     */
+    const draw = () => {
+      const a = Math.floor(pos);
+      const t = pos - a;
+      const lo = frames[a];
+      const hi = frames[Math.min(a + 1, count - 1)];
+      if (lo && hi) {
+        blit(lo, 1);
+        if (t > 0.01 && hi !== lo) blit(hi, t);
+      } else {
+        const i = nearestLoaded(Math.round(pos));
+        if (i < 0) return;
+        blit(frames[i]!, 1);
+      }
+      ctx.globalAlpha = 1;
+      if (painted < 0) canvas.style.opacity = "1";
+      painted = pos;
     };
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
       canvas.width = Math.round(window.innerWidth * dpr);
       canvas.height = Math.round(window.innerHeight * dpr);
-      ctx.imageSmoothingQuality = "high";
-      draw(true); // resizing clears the canvas
+      draw(); // resizing clears the canvas
     };
     resize();
     window.addEventListener("resize", resize);
@@ -185,8 +208,9 @@ export default function SequenceBackground() {
     const tick = (_time: number, deltaMs: number) => {
       const dt = Math.min(deltaMs / 1000, 0.05);
       smooth = damp(smooth, scrollState.progress, 6, dt);
-      target = Math.round(Math.min(1, Math.max(0, smooth)) * (count - 1));
-      if (target !== drawn) draw();
+      pos = Math.min(1, Math.max(0, smooth)) * (count - 1);
+      // Repaint only while the position is actually moving.
+      if (Math.abs(pos - painted) > 0.004) draw();
 
       // Subtle pointer parallax on desktop; the canvas is scaled up slightly
       // in CSS so the edges never show.
@@ -222,13 +246,8 @@ export default function SequenceBackground() {
         .then(() => {
           if (disposed) return;
           frames[i] = img;
-          // Redraw if this frame is a better match than what's on screen.
-          if (
-            drawn < 0 ||
-            Math.abs(i - target) < Math.abs(drawn - target)
-          ) {
-            draw();
-          }
+          // Repaint if this frame is one the current position needs.
+          if (painted < 0 || Math.abs(i - pos) < 2) draw();
         })
         .catch(() => {})
         .finally(pump);
