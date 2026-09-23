@@ -1,8 +1,8 @@
 /**
  * Tiny module-level store that bridges DOM scroll (driven by GSAP/Lenis)
- * and the WebGL render loop (react-three-fiber's useFrame).
+ * and the background image-sequence ticker.
  *
- * Keeping the 3D scene decoupled from React state avoids re-renders on scroll:
+ * Keeping the backdrop decoupled from React state avoids re-renders on scroll:
  * the DOM writes `progress`, the render loop reads it every frame.
  */
 export const scrollState = {

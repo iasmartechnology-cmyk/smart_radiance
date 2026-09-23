@@ -3,7 +3,7 @@ import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
-import SceneBackground from "@/components/3d/SceneBackground";
+import SequenceBackground from "@/components/background/SequenceBackground";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import JsonLd from "@/components/seo/JsonLd";
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Saltar al contenido
         </a>
         <SmoothScrollProvider>
-          <SceneBackground />
+          <SequenceBackground />
           <Nav />
           <main id="main">{children}</main>
           <Footer />

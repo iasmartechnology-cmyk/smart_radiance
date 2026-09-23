@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Background frames never change in place — a new cut gets new files.
+        source: "/sequence/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
@@ -39,11 +49,7 @@ const nextConfig: NextConfig = {
   },
   // Trim client bundles by transpiling only what's used from these libs.
   experimental: {
-    optimizePackageImports: [
-      "@react-three/drei",
-      "@react-three/postprocessing",
-      "gsap",
-    ],
+    optimizePackageImports: ["gsap"],
   },
 };
 
